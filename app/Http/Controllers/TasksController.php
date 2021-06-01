@@ -31,7 +31,7 @@ class TasksController extends Controller
      */
     public function create()
     {
-        
+
         $task = new task;
         
         return view('tasks.create', [
@@ -48,11 +48,23 @@ class TasksController extends Controller
      */
     public function store(Request $request)
     {
+
+        $request->validate([
+            'content' => 'required',
+            'status' => 'required|max:10',
+        ],
+        [
+           'status.required' => 'ステータスは必須項目です。', 
+           'content.required' => 'タスクは必須項目です。', 
+        ]);
         
+        //インスタンス
         $task = new Task;
+        $task->status = $request->status;
         $task->content = $request->content;
         $task->save();
         
+        //リダイレクト
         return redirect('/');
         
     }
@@ -98,8 +110,19 @@ class TasksController extends Controller
      */
     public function update(Request $request, $id)
     {
+        
+        $request->validate([
+            'content' => 'required',
+            'status' => 'required|max:10',
+        ],
+        [
+           'status.required' => 'ステータスは必須項目です。', 
+           'content.required' => 'タスクは必須項目です。', 
+        ]);
+        
         $task = Task::findOrFail($id);
         
+        $task->status = $request->status;
         $task->content = $request->content;
         $task->save();
         
