@@ -26,4 +26,3 @@
     @endif
     
     {!! link_to_route('tasks.create', 'Add', [], ['class' => 'btn btn-secondary']) !!}
-    

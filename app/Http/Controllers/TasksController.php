@@ -13,6 +13,8 @@ class TasksController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+     
+    //getでtasks/にアクセスされた場合の「一覧表示処理」
     public function index()
     {
         
@@ -20,10 +22,10 @@ class TasksController extends Controller
         
         if (\Auth::check()) { //ログイン時
             $user = \Auth::user();
-            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+            $tasks = $user->tasks()->paginate(10);
+            
             $data = [
               'tasks' => $tasks,
-              //'status' => $status,
             ];
         }
         return view('tasks.index',$data);
@@ -36,7 +38,6 @@ class TasksController extends Controller
      */
     public function create()
     {
-
         $task = new task;
 
         return view('tasks.create', [
@@ -51,14 +52,13 @@ class TasksController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+     
     public function store(Request $request)
     {
 
         $request->validate([
             'content' => 'required',
-        ],
-        [
-           'content.required' => 'タスクは必須項目です。', 
+            'status' => 'required|max:10',
         ]);
         
         // 認証済みユーザ（閲覧者）の投稿として作成（リクエストされた値をもとに作成）
@@ -67,8 +67,8 @@ class TasksController extends Controller
             'status' => $request->status,
         ]);
         
-        //リダイレクト
-        return back();
+        // indexへ戻る
+        return redirect('/');
         
     }
 
@@ -82,12 +82,14 @@ class TasksController extends Controller
     {
         // idの値で投稿を検索して取得
         $task = \App\Task::findOrFail($id);
-        
-        // 認証済みユーザ（閲覧者）がその投稿の所有者である場合は、詳細を表示
+
+        // 認証済みユーザ（閲覧者）がその投稿の所有者である場合は、詳細画面を表示
         if (\Auth::id() === $task->user_id) {
             return view('tasks.show', [
                 'task' => $task,
             ]);
+        } else {
+            return redirect ('/');
         }
     }
 
@@ -102,11 +104,13 @@ class TasksController extends Controller
         // idの値で投稿を検索して取得
         $task = \App\Task::findOrFail($id);
 
-        // 認証済みユーザ（閲覧者）がその投稿の所有者である場合は、編集
+        // 認証済みユーザ（閲覧者）がその投稿の所有者である場合は、編集画面を表示
         if (\Auth::id() === $task->user_id) {
             return view('tasks.edit', [
                 'task' => $task,
             ]);
+        } else {
+            return redirect ('/');
         }
     }
 
@@ -152,7 +156,7 @@ class TasksController extends Controller
             $task->delete();
         }
 
-        // 前のURLへリダイレクトさせる
-        return back();
+        // indexへ戻る
+        return redirect('/');
     }
 }
